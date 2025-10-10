@@ -3,7 +3,7 @@ import numpy as np
 import commpy
 import commpy.channelcoding.convcode as cc
 import commpy.modulation as modulation
-from commpy.utilities import awgn
+from commpy.channels import awgn
 # ... (這裡放入所有 commpy 相關的設定和輔助函式) ...
 
 def simulate_transmission(token_indices, snr_db, generator):
