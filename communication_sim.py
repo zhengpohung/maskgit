@@ -119,7 +119,6 @@ def simulate_transmission(token_indices, snr_db, generator):
                 token_bits = decoded_packet[j*10 : (j+1)*10]
                 token_val = int("".join(map(str, token_bits)), 2)
                 received_token_indices.append(token_val)
-        print("received_token_indices = ", received_token_indices)
 
     print(f"Total packet errors: {num_packet_errors} / {len(packets)}")
 
