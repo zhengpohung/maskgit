@@ -44,7 +44,7 @@ def simulate_transmission_analytical(token_indices, snr_db, generator):
     
     # --- 測試 ---
     print("--- 使用最終修正版 (Code 2 參數) 進行測試 ---")
-    snr_test_6db = 8
+    snr_test_8db = 8
     per_at_8db = calculate_analytical_per(snr_test_8db)
     print(f"在 SNR = {snr_test_8db} dB 時，PER 約為: {per_at_8db:.4f} (論文參考值: ~0.41)")
     
