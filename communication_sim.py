@@ -13,13 +13,12 @@ def simulate_transmission(token_indices, snr_db, generator):
     """
     # 1. 發射端 (TX)
     token_indices = np.asarray(token_indices)
-    print("token indices = ", token_indices.shape)
     #    - Token to Bits
     num_bits_per_token = 10
     
     # 將每個 token 索引轉換為 10-bit 的二進位序列
     # 例如: 123 -> [0, 0, 1, 1, 1, 1, 0, 1, 1]
-    message_bits = np.unpackbits(token_indices.astype(np.uint16).byteswap().view(np.uint8))
+    #message_bits = np.unpackbits(token_indices.astype(np.uint16).byteswap().view(np.uint8))
     # 需要一些 reshaping 和 slicing 來確保每個 token 準確對應 10 bits
     # 這裡只提供概念，實際操作需要仔細處理 NumPy 的位元操作
     # 簡化版概念：
@@ -27,7 +26,7 @@ def simulate_transmission(token_indices, snr_db, generator):
         # 將數字轉為二進位字串，並補零
         return [int(b) for b in bin(token)[2:].zfill(num_bits)]
     
-    all_bits = np.array([token_to_bits(t, 10) for t in token_indices]).flatten()
+    all_bits = np.array([token_to_bits(t, 10) for t in token_indices.flatten()]).flatten()
 
 
     #    - Packetization
