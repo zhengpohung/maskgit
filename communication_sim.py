@@ -78,7 +78,7 @@ def simulate_transmission(token_indices, snr_db, generator):
     #    - Demodulation (soft)
     demod_llrs = []
     # [修正] 使用列表推導式
-    demod_llrs = np.array([modem.demodulate(rp, demod_type='soft', noise_var=noise_var) for rp in received_packets_equalized])
+    demod_llrs = np.array([modem.demodulate(rp, demod_type='soft', noise_var=noise_var) for rp in received_packets])
 
     # [修正] Viterbi 解碼後，必須將輸出裁切回原始封包長度
     decoded_packets = np.array([cc.viterbi_decode(llrs, trellis, decoding_type='soft')[:bits_per_packet] for llrs in demod_llrs])
