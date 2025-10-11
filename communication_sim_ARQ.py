@@ -3,23 +3,31 @@ import numpy as np
 
 def calculate_analytical_per(snr_db, L_total_bits=160, code_rate=0.5, M=16):
     """
-    [cite_start]根據 ARQ 論文 [cite: 1] 的分析模型計算 PER。
-    論文參考: Energy_Efficiency_and_Spectral_Efficiency_Tradeoff_in_Type-I_ARQ_Systems.pdf
+    根據 ARQ 論文的分析模型計算 PER (修正版)。
+    全程使用 dB 單位進行計算以匹配論文的擬合模型。
     """
-    # [cite_start]根據 ARQ 論文 Table I，Code 1, 16QAM 的參數 [cite: 166]
+    # 根據 ARQ 論文 Table I，Code 1, 16QAM 的參數
     k_M = 0.523
     b_M = -0.314
 
-    # SNR 是 Es/N0，模型需要 Eb/N0 (即 γ_b)。進行轉換。
-    # Es/N0 = (Eb/N0) * code_rate * log2(M)
-    snr_linear = 10**(snr_db / 10.0)
-    gamma_b_linear = snr_linear / (code_rate * np.log2(M))
+    # 1. 將符號 SNR (Es/N0) 轉換為 位元 Eb/N0 (γ_b)，全程在 dB 域操作
+    # SNR_linear = γ_b_linear * code_rate * log2(M)
+    # 10*log10(SNR_linear) = 10*log10(γ_b_linear) + 10*log10(code_rate * log2(M))
+    # SNR_dB = γ_b_dB + 10*log10(code_rate * log2(M))
+    conversion_factor_db = 10 * np.log10(code_rate * np.log2(M))
+    gamma_b_db = snr_db - conversion_factor_db
 
-    # [cite_start]計算門檻值 γ_ω，論文中 log 為自然對數 [cite: 157]
-    gamma_omega = k_M * np.log(L_total_bits) + b_M
+    # 2. 計算門檻值 γ_ω (dB)。論文中的 log 是自然對數 (ln)。
+    # L_total_bits 是線性值，log(L_total_bits) 是線性值
+    gamma_omega_db = k_M * np.log(L_total_bits) + b_M
 
-    # [cite_start]計算 PER 的核心公式 [cite: 151]
-    per = 1 - np.exp(-gamma_omega / gamma_b_linear)
+    # 3. 計算 PER 的核心公式
+    # PER ≈ 1 - exp(-γ_ω / γ_b)
+    # 注意，此處的 γ_ω 和 γ_b 是線性值
+    gamma_omega_linear = 10**(gamma_omega_db / 10.0)
+    gamma_b_linear = 10**(gamma_b_db / 10.0)
+    
+    per = 1 - np.exp(-gamma_omega_linear / gamma_b_linear)
     
     return np.clip(per, 0, 1)
 
