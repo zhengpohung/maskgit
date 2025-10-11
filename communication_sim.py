@@ -12,7 +12,7 @@ def simulate_transmission(token_indices, snr_db, generator):
     最後返回一個可能帶有 MASK 的 token 序列。
     """
     # 1. 發射端 (TX)
-
+    token_indices = np.asarray(token_indices)
     #    - Token to Bits
     num_bits_per_token = 10
     
