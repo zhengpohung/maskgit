@@ -74,23 +74,14 @@ def simulate_transmission(token_indices, snr_db, generator):
     #    ...
 
     # 3. 接收端 (RX)
-
+    noise_var = 1.0 / (10**(snr_db / 10.0))
     #    - Demodulation (soft)
     demod_llrs = []
-    for received_packet in received_packets:
-        # modem.demodulate 可以設定輸出為 'hard' 或 'soft' (LLRs)
-        # 注意：noise_var (雜訊變異數) 對於計算 LLRs 很重要
-        noise_var = 1.0 / (10**(snr_db / 10.0))
-        llrs = modem.demodulate(received_packet, demod_type='soft', noise_var=noise_var)
-        demod_llrs.append(llrs)
+    # [修正] 使用列表推導式
+    demod_llrs = np.array([modem.demodulate(rp, demod_type='soft', noise_var=noise_var) for rp in received_packets_equalized])
 
-
-    #    - Viterbi Decoding (soft)
-    decoded_packets = []
-    for llrs in demod_llrs:
-        # 將 LLRs 輸入 Viterbi 解碼器，並指定 dec_type='soft'
-        decoded_bits = cc.viterbi_decode(llrs, trellis, decoding_type='soft')
-        decoded_packets.append(decoded_bits)
+    # [修正] Viterbi 解碼後，必須將輸出裁切回原始封包長度
+    decoded_packets = np.array([cc.viterbi_decode(llrs, trellis, decoding_type='soft')[:bits_per_packet] for llrs in demod_llrs])
 
 
     #    - CRC Check & Depacketization
