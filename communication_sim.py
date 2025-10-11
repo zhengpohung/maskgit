@@ -93,6 +93,7 @@ def simulate_transmission(token_indices, snr_db, generator):
         original_packet_bits = packets[i]
         if not np.array_equal(decoded_packet, original_packet_bits):
             # 封包出錯，生成 16 個 MASK token
+            print("+++++++++++")
             received_token_indices.extend([MASK_TOKEN_ID] * 16)
         else:
             # 同樣，這裡的位元到位元組轉換需要精確處理
