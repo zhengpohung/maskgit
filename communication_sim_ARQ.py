@@ -15,6 +15,7 @@ def calculate_analytical_per(snr_db, L_total_bits=160, code_rate=0.5, M=16):
     # 10*log10(SNR_linear) = 10*log10(γ_b_linear) + 10*log10(code_rate * log2(M))
     # SNR_dB = γ_b_dB + 10*log10(code_rate * log2(M))
     conversion_factor_db = 10 * np.log10(code_rate * np.log2(M))
+    conversion_factor_db = 0.88
     gamma_b_db = snr_db - conversion_factor_db
 
     # 2. 計算門檻值 γ_ω (dB)。論文中的 log 是自然對數 (ln)。
@@ -36,44 +37,44 @@ def simulate_transmission_analytical(token_indices, snr_db, generator):
     接收 token 序列，使用分析模型計算 PER，並隨機丟棄封包來模擬傳輸。
     返回一個可能帶有 MASK 的 token 序列。
     """
-    # --- 測試 ---
-    print("--- 使用最終修正版 (Code 2 參數) 進行測試 ---")
-    snr_test_6db = 6
-    per_at_6db = calculate_analytical_per(snr_test_6db)
-    print(f"在 SNR = {snr_test_6db} dB 時，PER 約為: {per_at_6db:.4f} (論文參考值: ~0.41)")
+    # # --- 測試 ---
+    # print("--- 使用最終修正版 (Code 2 參數) 進行測試 ---")
+    # snr_test_6db = 6
+    # per_at_6db = calculate_analytical_per(snr_test_6db)
+    # print(f"在 SNR = {snr_test_6db} dB 時，PER 約為: {per_at_6db:.4f} (論文參考值: ~0.41)")
     
-    # --- 測試 ---
-    print("--- 使用最終修正版 (Code 2 參數) 進行測試 ---")
-    snr_test_8db = 8
-    per_at_8db = calculate_analytical_per(snr_test_8db)
-    print(f"在 SNR = {snr_test_8db} dB 時，PER 約為: {per_at_8db:.4f} (論文參考值: ~0.41)")
+    # # --- 測試 ---
+    # print("--- 使用最終修正版 (Code 2 參數) 進行測試 ---")
+    # snr_test_8db = 8
+    # per_at_8db = calculate_analytical_per(snr_test_8db)
+    # print(f"在 SNR = {snr_test_8db} dB 時，PER 約為: {per_at_8db:.4f} (論文參考值: ~0.41)")
     
-    # --- 測試 ---
-    print("--- 使用最終修正版 (Code 2 參數) 進行測試 ---")
-    snr_test_10db = 10
-    per_at_10db = calculate_analytical_per(snr_test_10db)
-    print(f"在 SNR = {snr_test_10db} dB 時，PER 約為: {per_at_10db:.4f} (論文參考值: ~0.41)")
+    # # --- 測試 ---
+    # print("--- 使用最終修正版 (Code 2 參數) 進行測試 ---")
+    # snr_test_10db = 10
+    # per_at_10db = calculate_analytical_per(snr_test_10db)
+    # print(f"在 SNR = {snr_test_10db} dB 時，PER 約為: {per_at_10db:.4f} (論文參考值: ~0.41)")
     
-    # --- 測試 ---
-    print("--- 使用最終修正版 (Code 2 參數) 進行測試 ---")
-    snr_test_12db = 12
-    per_at_12db = calculate_analytical_per(snr_test_12db)
-    print(f"在 SNR = {snr_test_6db} dB 時，PER 約為: {per_at_12db:.4f} (論文參考值: ~0.41)")
-    # --- 測試 ---
-    print("--- 使用最終修正版 (Code 2 參數) 進行測試 ---")
-    snr_test_14db = 14
-    per_at_14db = calculate_analytical_per(snr_test_14db)
-    print(f"在 SNR = {snr_test_14db} dB 時，PER 約為: {per_at_14db:.4f} (論文參考值: ~0.41)")
-    # --- 測試 ---
-    print("--- 使用最終修正版 (Code 2 參數) 進行測試 ---")
-    snr_test_16db = 16
-    per_at_16db = calculate_analytical_per(snr_test_16db)
-    print(f"在 SNR = {snr_test_16db} dB 時，PER 約為: {per_at_16db:.4f} (論文參考值: ~0.41)")
+    # # --- 測試 ---
+    # print("--- 使用最終修正版 (Code 2 參數) 進行測試 ---")
+    # snr_test_12db = 12
+    # per_at_12db = calculate_analytical_per(snr_test_12db)
+    # print(f"在 SNR = {snr_test_6db} dB 時，PER 約為: {per_at_12db:.4f} (論文參考值: ~0.41)")
+    # # --- 測試 ---
+    # print("--- 使用最終修正版 (Code 2 參數) 進行測試 ---")
+    # snr_test_14db = 14
+    # per_at_14db = calculate_analytical_per(snr_test_14db)
+    # print(f"在 SNR = {snr_test_14db} dB 時，PER 約為: {per_at_14db:.4f} (論文參考值: ~0.41)")
+    # # --- 測試 ---
+    # print("--- 使用最終修正版 (Code 2 參數) 進行測試 ---")
+    # snr_test_16db = 16
+    # per_at_16db = calculate_analytical_per(snr_test_16db)
+    # print(f"在 SNR = {snr_test_16db} dB 時，PER 約為: {per_at_16db:.4f} (論文參考值: ~0.41)")
 
-    print("--- 使用最終修正版 (Code 2 參數) 進行測試 ---")
-    snr_test_18db = 18
-    per_at_18db = calculate_analytical_per(snr_test_18db)
-    print(f"在 SNR = {snr_test_18db} dB 時，PER 約為: {per_at_18db:.4f} (論文參考值: ~0.41)")
+    # print("--- 使用最終修正版 (Code 2 參數) 進行測試 ---")
+    # snr_test_18db = 18
+    # per_at_18db = calculate_analytical_per(snr_test_18db)
+    # print(f"在 SNR = {snr_test_18db} dB 時，PER 約為: {per_at_18db:.4f} (論文參考值: ~0.41)")
     # 1. 計算該 SNR 下的理論 PER
     # 每個封包有 16 token，每個 token 10 bits，共 160 bits
     bits_per_packet = 16 * 10
