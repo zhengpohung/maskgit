@@ -55,6 +55,11 @@ def simulate_transmission(token_indices, snr_db, generator):
     #    - Rayleigh Fading
 
     received_packets = []
+    avg_symbol_energy = modem.Es
+    signal_power = avg_symbol_energy
+    snr_linear = 10**(snr_db / 10.0)
+    noise_power = signal_power / snr_linear
+    noise_variance_per_component = noise_power / 2.0
     for modulated_packet in modulated_packets:
         # 1. 瑞利衰減通道 (Rayleigh Fading Channel)
         # 產生一個複數高斯隨機變數，其振幅服從瑞利分佈
@@ -64,21 +69,32 @@ def simulate_transmission(token_indices, snr_db, generator):
         # 2. 添加高斯白雜訊 (AWGN)
         # commpy.utilities.awgn 函式可以幫我們完成
         
-        noisy_signal = awgn(faded_signal, snr_db)
+        noise = (np.sqrt(noise_variance_per_component) * np.random.randn(*faded_signal.shape) + 
+                 1j * np.sqrt(noise_variance_per_component) * np.random.randn(*faded_signal.shape))
+        
+        noisy_signal = faded_signal + noise
         
         # 接收端需要知道衰減係數來進行等化
         # 在實際系統中這一步是通道估計，模擬時我們可以假設接收端完美知道
         equalized_signal = noisy_signal / rayleigh_coeff
-        received_packets.append(equalized_signal)
+        equalized_noise_power = noise_power / (np.abs(rayleigh_coeff)**2)
+        received_packets.append({
+            "signal": equalized_signal,
+            "noise_power": equalized_noise_power
+        })
     #    - AWGN
     #    ...
 
     # 3. 接收端 (RX)
-    noise_var = 1.0 / (10**(snr_db / 10.0))
     #    - Demodulation (soft)
     demod_llrs = []
     # [修正] 使用列表推導式
-    demod_llrs = np.array([modem.demodulate(rp, demod_type='soft', noise_var=noise_var) for rp in received_packets])
+    for rp_data in received_packets:
+        # 將每個封包 "自己對應的" 雜訊功率傳入解調器
+        llrs = modem.demodulate(rp_data["signal"], demod_type='soft', noise_var=rp_data["noise_power"])
+        demod_llrs.append(llrs)
+    
+    demod_llrs = np.array(demod_llrs)
 
     # [修正] Viterbi 解碼後，必須將輸出裁切回原始封包長度
     decoded_packets = np.array([cc.viterbi_decode(llrs, trellis, decoding_type='soft')[:bits_per_packet] for llrs in demod_llrs])
@@ -89,12 +105,12 @@ def simulate_transmission(token_indices, snr_db, generator):
     MASK_TOKEN_ID = 1024 
     received_token_indices = []
 
+    num_packet_errors = 0
     for i, decoded_packet in enumerate(decoded_packets):
-        print(i)
         original_packet_bits = packets[i]
         if not np.array_equal(decoded_packet, original_packet_bits):
             # 封包出錯，生成 16 個 MASK token
-            print("+++++++++++")
+            num_packet_errors += 1
             received_token_indices.extend([MASK_TOKEN_ID] * 16)
         else:
             # 同樣，這裡的位元到位元組轉換需要精確處理
@@ -103,6 +119,8 @@ def simulate_transmission(token_indices, snr_db, generator):
                 token_bits = decoded_packet[j*10 : (j+1)*10]
                 token_val = int("".join(map(str, token_bits)), 2)
                 received_token_indices.append(token_val)
+
+    print(f"Total packet errors: {num_packet_errors} / {len(packets)}")
 
     # 將 received_token_indices 轉為 NumPy 陣列，準備送入 MaskGIT
     final_tokens = np.array(received_token_indices)
