@@ -90,6 +90,7 @@ def simulate_transmission(token_indices, snr_db, generator):
     received_token_indices = []
 
     for i, decoded_packet in enumerate(decoded_packets):
+        print(i)
         original_packet_bits = packets[i]
         if not np.array_equal(decoded_packet, original_packet_bits):
             # 封包出錯，生成 16 個 MASK token
