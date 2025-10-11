@@ -102,7 +102,7 @@ def simulate_transmission(token_indices, snr_db, generator):
 
     #    - CRC Check & Depacketization
         # 假設 MASK_TOKEN_ID 是一個預留的特殊 ID，例如 1024
-    MASK_TOKEN_ID = 1024 
+    MASK_TOKEN_ID = -1
     received_token_indices = []
 
     num_packet_errors = 0
