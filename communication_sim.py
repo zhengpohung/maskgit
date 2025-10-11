@@ -13,6 +13,7 @@ def simulate_transmission(token_indices, snr_db, generator):
     """
     # 1. 發射端 (TX)
     token_indices = np.asarray(token_indices)
+    print("token indices = ", token_indices.shape)
     #    - Token to Bits
     num_bits_per_token = 10
     
