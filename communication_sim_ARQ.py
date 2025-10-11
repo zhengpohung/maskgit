@@ -7,8 +7,8 @@ def calculate_analytical_per(snr_db, L_total_bits=160, code_rate=0.5, M=16):
     全程使用 dB 單位進行計算以匹配論文的擬合模型。
     """
     # 根據 ARQ 論文 Table I，Code 1, 16QAM 的參數
-    k_M = 0.523
-    b_M = -0.314
+    k_M = 0.164
+    b_M = 0.341
 
     # 1. 將符號 SNR (Es/N0) 轉換為 位元 Eb/N0 (γ_b)，全程在 dB 域操作
     # SNR_linear = γ_b_linear * code_rate * log2(M)
