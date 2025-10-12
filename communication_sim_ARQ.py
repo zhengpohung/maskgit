@@ -89,7 +89,7 @@ def simulate_transmission_analytical(token_indices, snr_db, generator):
     # 3. 根據 PER 決定哪些封包遺失
     lost_packets_mask = np.random.rand(num_packets) < per
     num_packet_errors = np.sum(lost_packets_mask)
-    print(f"SNR={snr_db}dB, PER={per:.4f}, Packet Errors: {num_packet_errors} / {num_packets}")
+    #print(f"SNR={snr_db}dB, PER={per:.4f}, Packet Errors: {num_packet_errors} / {num_packets}")
 
     # 4. 建立接收端的 token 序列
     MASK_TOKEN_ID = -1 # 使用一個臨時 ID
