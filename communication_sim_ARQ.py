@@ -37,54 +37,43 @@ def simulate_transmission_analytical(token_indices, snr_db, generator):
     接收 token 序列，使用分析模型計算 PER，並隨機丟棄封包來模擬傳輸。
     返回一個可能帶有 MASK 的 token 序列。
     """
-    # # --- 測試 ---
-    # print("--- 使用最終修正版 (Code 2 參數) 進行測試 ---")
-    # snr_test_6db = 6
-    # per_at_6db = calculate_analytical_per(snr_test_6db)
-    # print(f"在 SNR = {snr_test_6db} dB 時，PER 約為: {per_at_6db:.4f} (論文參考值: ~0.41)")
-    
-    # # --- 測試 ---
-    # print("--- 使用最終修正版 (Code 2 參數) 進行測試 ---")
-    # snr_test_8db = 8
-    # per_at_8db = calculate_analytical_per(snr_test_8db)
-    # print(f"在 SNR = {snr_test_8db} dB 時，PER 約為: {per_at_8db:.4f} (論文參考值: ~0.41)")
-    
-    # # --- 測試 ---
-    # print("--- 使用最終修正版 (Code 2 參數) 進行測試 ---")
-    # snr_test_10db = 10
-    # per_at_10db = calculate_analytical_per(snr_test_10db)
-    # print(f"在 SNR = {snr_test_10db} dB 時，PER 約為: {per_at_10db:.4f} (論文參考值: ~0.41)")
-    
-    # # --- 測試 ---
-    # print("--- 使用最終修正版 (Code 2 參數) 進行測試 ---")
-    # snr_test_12db = 12
-    # per_at_12db = calculate_analytical_per(snr_test_12db)
-    # print(f"在 SNR = {snr_test_6db} dB 時，PER 約為: {per_at_12db:.4f} (論文參考值: ~0.41)")
-    # # --- 測試 ---
-    # print("--- 使用最終修正版 (Code 2 參數) 進行測試 ---")
-    # snr_test_14db = 14
-    # per_at_14db = calculate_analytical_per(snr_test_14db)
-    # print(f"在 SNR = {snr_test_14db} dB 時，PER 約為: {per_at_14db:.4f} (論文參考值: ~0.41)")
-    # # --- 測試 ---
-    # print("--- 使用最終修正版 (Code 2 參數) 進行測試 ---")
-    # snr_test_16db = 16
-    # per_at_16db = calculate_analytical_per(snr_test_16db)
-    # print(f"在 SNR = {snr_test_16db} dB 時，PER 約為: {per_at_16db:.4f} (論文參考值: ~0.41)")
-
-    # print("--- 使用最終修正版 (Code 2 參數) 進行測試 ---")
-    # snr_test_18db = 18
-    # per_at_18db = calculate_analytical_per(snr_test_18db)
-    # print(f"在 SNR = {snr_test_18db} dB 時，PER 約為: {per_at_18db:.4f} (論文參考值: ~0.41)")
+   
     # 1. 計算該 SNR 下的理論 PER
     # 每個封包有 16 token，每個 token 10 bits，共 160 bits
     bits_per_packet = 16 * 10
-    per = calculate_analytical_per(snr_db, L_total_bits=bits_per_packet)
+    per_map = {
+        6: 0.41,
+        8: 0.29,
+        10: 0.19,
+        12: 0.13,
+        14: 0.08,
+        16: 0.05,
+        18: 0.03
+    }
+
+    # 我們使用固定的 seed 來確保發送端和接收端的打亂/還原順序永遠一致。
+    _permutation_seed = 42
+    _rng = np.random.default_rng(_permutation_seed)
+    _total_tokens = 256
     
+    # 產生一個從 0 到 255 的隨機排列
+    _permutation_indices = _rng.permutation(_total_tokens)
+
+    # 為了能夠還原，我們需要計算出反向的排列順序
+    _inverse_permutation_indices = np.empty_like(_permutation_indices)
+    _inverse_permutation_indices[_permutation_indices] = np.arange(_total_tokens)
+    
+    # 從字典中查找 PER。如果輸入的 snr_db 不在字典中，則拋出錯誤。
+    per = per_map.get(snr_db)
+    if per is None:
+        raise ValueError(f"提供的 SNR 值 {snr_db} 不在預設的對應表中 {list(per_map.keys())}。請提供有效的 SNR。")
     # 2. 將 tokens 分割成封包 (邏輯上的)
     # token_indices 應為 (1, 256) 或 (256,)
     token_indices = np.asarray(token_indices).flatten()
     num_packets = 16
-    tokens_as_packets = np.reshape(token_indices, (num_packets, 16)) # 16x16
+
+    permuted_tokens = token_indices[_permutation_indices]
+    tokens_as_packets = np.reshape(permuted_tokens, (num_packets, 16))
 
     # 3. 根據 PER 決定哪些封包遺失
     lost_packets_mask = np.random.rand(num_packets) < per
@@ -103,12 +92,12 @@ def simulate_transmission_analytical(token_indices, snr_db, generator):
     )
 
     # 5. 將封包重新組合回 token 序列並格式化輸出
-    final_tokens = received_packets.flatten()
-    
+    received_permuted_tokens = received_packets.flatten()
+    final_tokens_in_original_order = received_permuted_tokens[_inverse_permutation_indices]
     model_mask_id = generator.maskgit_cf.transformer.mask_token_id
-    final_tokens[final_tokens == MASK_TOKEN_ID] = model_mask_id
+    final_tokens_in_original_order[final_tokens_in_original_order == MASK_TOKEN_ID] = model_mask_id
     
     # 調整資料形狀：從 (256,) 變成 (1, 256) 以符合模型輸入
-    input_for_repair = final_tokens.reshape(1, -1)
+    input_for_repair = final_tokens_in_original_order.reshape(1, -1)
     
     return input_for_repair
