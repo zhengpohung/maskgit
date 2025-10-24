@@ -71,7 +71,7 @@ class ImageNet_class_conditional_generator():
         self.tokenizer_variables = restore_from_path(
             ImageNet_class_conditional_generator.checkpoint_canonical_path("tokenizer", image_size))
 
-    def generate_samples(self, input_tokens, rng, start_iter=0, num_iterations=16):
+    def generate_samples(self, input_tokens, rng, start_iter=2, num_iterations=12):
       def tokens_to_logits(seq):
         logits = self.transformer_model.apply(self.transformer_variables, seq, deterministic=True)
         logits = logits[..., :self.maskgit_cf.vqvae.codebook_size]
