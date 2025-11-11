@@ -82,7 +82,8 @@ class ImageNet_class_conditional_generator():
             rng,
             tokens_to_logits,
             num_iter=num_iterations,
-            choice_temperature=self.maskgit_cf.sample_choice_temperature,
+            choice_temperature=1.0,
+            #choice_temperature=self.maskgit_cf.sample_choice_temperature,
             mask_token_id=self.maskgit_cf.transformer.mask_token_id,
             start_iter=start_iter,
             )
