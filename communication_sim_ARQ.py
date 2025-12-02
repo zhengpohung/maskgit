@@ -42,13 +42,13 @@ def simulate_transmission_analytical(token_indices, snr_db, generator):
     # 每個封包有 16 token，每個 token 10 bits，共 160 bits
     bits_per_packet = 16 * 10
     per_map = {
-        6: 0.41,
-        8: 0.29,
-        10: 0.19,
-        12: 0.13,
-        14: 0.08,
-        16: 0.05,
-        18: 0.03
+        6: 0.69,
+        8: 0.52,
+        10: 0.37,
+        12: 0.25,
+        14: 0.17,
+        16: 0.11,
+        18: 0.07
     }
 
     # 我們使用固定的 seed 來確保發送端和接收端的打亂/還原順序永遠一致。
